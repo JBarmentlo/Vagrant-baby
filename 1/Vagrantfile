@@ -19,43 +19,42 @@ CPUS    = 3
 
 
 Vagrant.configure("2") do |config|
-	config.vm.box				= "centos/stream8"
-	config.vm.box_version				= "20210210.0"
-	# config.vm.box_url 			= "https://app.vagrantup.com/centos/boxes/8/versions/2011.0/providers/virtualbox.box"
+	config.vm.box 				= "joepyjoep/CentosVB"
+	config.vm.box_version 		= "1.0"
 	config.vm.box_check_update 	= false
 	config.vm.hostname 			= "jbarment"
-	# config.vm.provision "shell", privileged: true, path: "EOL_FIX.sh"
+	config.vm.synced_folder 	".", "/vagrant", type: "virtualbox"
+	
 
-	config.vm.synced_folder 		".", "/vagrant", type: "virtualbox"
-
-	# if Vagrant.has_plugin?("vagrant-vbguest") then
-	# 	# config.vbguest.auto_update = false
-	# 	config.vbguest.installer_options = { allow_kernel_upgrade: true }
-	# end
-
+	if Vagrant.has_plugin?("vagrant-vbguest") then
+		config.vbguest.auto_update 			= false
+		config.vbguest.installer_options 	= { allow_kernel_upgrade: true }
+	end
 
 	config.vm.provider "virtualbox" do |vbox|
-		vbox.memory = RAM
-		vbox.cpus 	= CPUS
+		vbox.memory 	= RAM
+		vbox.cpus 		= CPUS
+		vbox.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+		vbox.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
 	end
-	
+
 	config.vm.define M_NAME do |masta|
-		masta.vm.hostname = M_NAME
-		masta.vm.network "private_network", ip: M_IP
-		# masta.vm.provision "shell", privileged: true, path: "EOL_FIX.sh"
-		# masta.vm.provision "shell", privileged: true, path: "masta.sh", args: [M_IP]
-		masta.vm.provider "virtualbox" do |vboxx|
-			vboxx.name = M_NAME
+		masta.vm.hostname 	= M_NAME
+		masta.vm.network 	"private_network", ip: M_IP
+		masta.vm.provision 	"shell", privileged: true, path: "masta.sh", args: [M_IP]
+
+		masta.vm.provider 	"virtualbox" do |vbox|
+			vbox.name = M_NAME
 		end
 	end
   
 	config.vm.define S_NAME do |slave|
-		slave.vm.hostname = S_NAME
-		slave.vm.network "private_network", ip: S_IP
-		# slave.vm.provision "shell", privileged: true, path: "EOL_FIX.sh"
-		# slave.vm.provision "shell", privileged: true, path: "slave.sh", args: [M_IP, S_IP]
-		slave.vm.provider "virtualbox" do |vboxx|
-			vboxx.name = S_NAME
+		slave.vm.hostname 	= S_NAME
+		slave.vm.network 	"private_network", ip: S_IP
+		slave.vm.provision 	"shell", privileged: true, path: "slave.sh", args: [M_IP, S_IP]
+
+		slave.vm.provider 	"virtualbox" do |vbox|
+			vbox.name = S_NAME
 		end
 	end
 end
